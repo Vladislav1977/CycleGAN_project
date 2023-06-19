@@ -1,9 +1,11 @@
 import torch
 import torch.nn as nn
+import matplotlib.pyplot as plt
 
 import random
 
-from  Generator import *
+from models.Generator import *
+import config
 
 
 def weights_init(m):
@@ -16,8 +18,8 @@ def weights_init(m):
         nn.init.normal_(m.weight.data, 1.0, 0.02)
         nn.init.constant_(m.bias.data, 0.0)
 
-def grad_penalty(disc, fake, real, lambda_gp):
-    alpha = torch.rand(real.shape[0], 1, 1, 1)
+def grad_penalty(disc, fake, real, device, lambda_gp=10):
+    alpha = torch.rand(real.shape[0], 1, 1, 1, device=device)
     x_interpolate = alpha * real + (1 - alpha) * fake
     disc_interpolate = disc(x_interpolate)
     grad = torch.autograd.grad(
@@ -57,6 +59,49 @@ class ImageBuffer:
                     return_images.append(img_return)
                     self.buff[idx] = image
         return torch.stack(return_images, dim=0)
+
+
+def save_checkpoint(model, optimizer, filename="checkpoint.pth.tar", mode="Kaggle"):
+    print("Saving checkpoint")
+    checkpoint = {
+        "model_dict": model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+    }
+    if mode == "Kaggle":
+        torch.save(checkpoint, filename)
+    elif mode =="Collab":
+        path = f'/content/gdrive/MyDrive/models/GAN/{filename}'
+        torch.save(checkpoint, path)
+"""
+def init_collab(mode):
+    if mode =="Collab":
+        from google.colab import drive
+        drive.mount('/content/gdrive')
+    else:
+        pass """
+
+def load_checkpoint(checkpoint_file, model, optimizer, lr):
+    print("Loading checkpoint")
+    checkpoint = torch.load(checkpoint_file, map_location=config.DEVICE)
+    model.load_state_dict(checkpoint["model_dict"])
+    optimizer.load_state_dict(checkpoint["optimizer"])
+
+    # If we don't do this then it will just have learning rate of old checkpoint
+    # and it will lead to many hours of debugging \:
+    for param_group in optimizer.param_groups:
+        param_group["lr"] = lr
+
+def plot_reconstruct(x, y):
+    fig, axes = plt.subplots(2, 3, figsize=(20, 8))
+    names = ["real", "fake", "reconstructed"]
+    for i in range(3):
+        #    i = np.random.randint(13143)
+        axes[0][i].imshow(torch.permute(x[i], (1, 2, 0)).detach().to("cpu"))
+        axes[0][i].set_title(names[i])
+        axes[1][i].imshow(torch.permute(x[i], (1, 2, 0)).detach().to("cpu"))
+    plt.show()
+
+
 
 
 buff = ImageBuffer(50)

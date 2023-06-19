@@ -70,8 +70,8 @@ class ResNetGen(nn.Module):
 
 
 
-rand = torch.randn(3, 3, 256, 256)
-netG = ResNetGen(3, 64, 3)
+rand = torch.randn(3, 256, 256)
+netG = ResNetGen()
 print(netG(rand).shape)
 
 
