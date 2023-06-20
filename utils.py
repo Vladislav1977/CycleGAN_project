@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import random
 
 from models.Generator import *
-import config
 
 
 def weights_init(m):
@@ -21,6 +20,7 @@ def weights_init(m):
 def grad_penalty(disc, fake, real, device, lambda_gp=10):
     alpha = torch.rand(real.shape[0], 1, 1, 1, device=device)
     x_interpolate = alpha * real + (1 - alpha) * fake
+    x_interpolate.requires_grad_(True)
     disc_interpolate = disc(x_interpolate)
     grad = torch.autograd.grad(
         inputs=x_interpolate,
@@ -80,9 +80,9 @@ def init_collab(mode):
     else:
         pass """
 
-def load_checkpoint(checkpoint_file, model, optimizer, lr):
+def load_checkpoint(checkpoint_file, model, optimizer, lr, device):
     print("Loading checkpoint")
-    checkpoint = torch.load(checkpoint_file, map_location=config.DEVICE)
+    checkpoint = torch.load(checkpoint_file, map_location=device)
     model.load_state_dict(checkpoint["model_dict"])
     optimizer.load_state_dict(checkpoint["optimizer"])
 
@@ -98,7 +98,7 @@ def plot_reconstruct(x, y):
         #    i = np.random.randint(13143)
         axes[0][i].imshow(torch.permute(x[i], (1, 2, 0)).detach().to("cpu"))
         axes[0][i].set_title(names[i])
-        axes[1][i].imshow(torch.permute(x[i], (1, 2, 0)).detach().to("cpu"))
+        axes[1][i].imshow(torch.permute(y[i], (1, 2, 0)).detach().to("cpu"))
     plt.show()
 
 

@@ -40,6 +40,6 @@ class PatchDisc(nn.Module):
         x = self.final_block(x)
         return x
 
-rand = torch.randn(3, 3, 256, 256)
-netD = PatchDisc(3, 64)
-print(netD(rand).shape)
+#rand = torch.randn(3, 3, 256, 256)
+#netD = PatchDisc(3, 64)
+#print(netD(rand).shape)

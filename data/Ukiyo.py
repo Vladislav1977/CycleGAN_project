@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 
 class MyDataset(Dataset):
 
-    def __init__(self, path_0, path_1, transform):
+    def __init__(self, path_0, path_1, transform=None):
         super().__init__()
 
         self.path_0 = path_0
@@ -22,11 +22,17 @@ class MyDataset(Dataset):
         self.transform = transform
 
     def __getitem__(self, index):
-        x = Image.open(self.img_0[index % len(self.img_0)]).convert("RGB")
-        y = Image.open(self.img_1[index % len(self.img_1)]).convert("RGB")
 
-        x = self.transform(x)
-        y = self.transform(y)
+        x = os.path.join(self.path_0, self.img_0[index % len(self.img_0)])
+        y = os.path.join(self.path_1, self.img_1[index % len(self.img_1)])
+
+        x = Image.open(x).convert("RGB")
+        y = Image.open(y).convert("RGB")
+
+
+        if self.transform is not None:
+            x = self.transform(x)
+            y = self.transform(y)
 
         return x, y
 

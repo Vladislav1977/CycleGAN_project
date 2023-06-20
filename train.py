@@ -12,17 +12,16 @@ from tqdm import tqdm
 from torchvision.utils import save_image
 from models.Discriminator import PatchDisc
 from models.Generator import ResNetGen
-from datasets.Ukiyo import MyDataset
+from data.Ukiyo import MyDataset
 
 
-Buffer_A = ImageBuffer(50)
-Buffer_F = ImageBuffer(50)
+device = torch.device('cuda')
 
 def fit(DiscA, DiscF, GenF_A, GenA_F,
         opt_D, opt_G, mse, l1, loader,
         Buffer_A, Buffer_F, lambda_a,
         lambda_b, lambda_idt=0, sched_D=None,
-        sched_G=None, penalty=None, device=torch.device('cuda')):
+        sched_G=None, penalty=None, device=device):
 
 
     for i, (A_real, F_real) in enumerate(tqdm(loader)):
@@ -31,7 +30,7 @@ def fit(DiscA, DiscF, GenF_A, GenA_F,
 
         #Train D_A
         A_fake = GenF_A(F_real)
-        A_fake_buff = Buffer_A.extract(A_fake)
+        A_fake_buff = Buffer_A.extract(A_fake.detach())
         D_A_real = DiscA(A_real)
         D_A_fake = DiscA(A_fake_buff)
         MSE_A_real = mse(D_A_real, torch.ones_like(D_A_real))
@@ -42,7 +41,7 @@ def fit(DiscA, DiscF, GenF_A, GenA_F,
         #Train D_F
 
         F_fake = GenA_F(A_real)
-        F_fake_buff = Buffer_F.extract(F_fake)
+        F_fake_buff = Buffer_F.extract(F_fake.detach())
         D_F_real = DiscF(F_real)
         D_F_fake = DiscF(F_fake_buff)
         MSE_F_real = mse(D_F_real, torch.ones_like(D_F_real))
@@ -50,8 +49,8 @@ def fit(DiscA, DiscF, GenF_A, GenA_F,
         D_F_loss = (MSE_F_real + MSE_F_fake) / 2
 
         if penalty is not None:
-            D_F_loss += grad_penalty(DiscF, F_fake, F_real)
-            D_A_loss += grad_penalty(DiscA, A_fake, A_real)
+            D_F_loss += grad_penalty(DiscF, F_fake_buff, F_real)
+            D_A_loss += grad_penalty(DiscA, A_fake_buff, A_real)
 
         D_loss = D_A_loss + D_F_loss
         
@@ -102,16 +101,16 @@ def fit(DiscA, DiscF, GenF_A, GenA_F,
 
 def train(epoches):
 
-    DiscA = PatchDisc()
+    DiscA = PatchDisc().to(device)
     DiscA.apply(weights_init)
 
-    DiscF = PatchDisc()
+    DiscF = PatchDisc().to(device)
     DiscF.apply(weights_init)
 
-    GenA_F = ResNetGen()
+    GenA_F = ResNetGen().to(device)
     GenA_F.apply(weights_init)
 
-    GenF_A = ResNetGen()
+    GenF_A = ResNetGen().to(device)
     GenF_A.apply(weights_init)
 
     opt_D = torch.optim.Adam(
@@ -124,8 +123,7 @@ def train(epoches):
 
 
     df = MyDataset(config.PATH_0,
-                   config.PATH_1,
-                   config.transform)
+                   config.PATH_1)
 
     train_dl = DataLoader(
         df, batch_size=config.BATCH, shuffle=True)
