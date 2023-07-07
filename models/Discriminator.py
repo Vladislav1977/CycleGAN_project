@@ -14,10 +14,6 @@ class Block(nn.Module):
     def forward(self, x):
         return self.conv_block(x)
 
-
-
-
-
 class PatchDisc(nn.Module):
 
     def __init__(self, inc=3, nfc=64):
@@ -40,6 +36,3 @@ class PatchDisc(nn.Module):
         x = self.final_block(x)
         return x
 
-#rand = torch.randn(3, 3, 256, 256)
-#netD = PatchDisc(3, 64)
-#print(netD(rand).shape)
