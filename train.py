@@ -1,27 +1,25 @@
-import torch
 from torch.utils.data import DataLoader
-import torch.nn as nn
-import torch.optim as optim
+
 import itertools
 
 
-import config
+from config import Config
 from utils import *
 
 from tqdm import tqdm
-from torchvision.utils import save_image
 from models.Discriminator import PatchDisc
 from models.Generator import ResNetGen
-from data.Ukiyo import MyDataset
+from dataprocess.data import MyDataset
 
 
 device = torch.device('cuda')
 
+
 def fit(DiscA, DiscF, GenF_A, GenA_F,
         opt_D, opt_G, mse, l1, loader,
-        Buffer_A, Buffer_F, lambda_a,
-        lambda_b, lambda_idt=0, sched_D=None,
-        sched_G=None, penalty=None, device=device):
+        Buffer_A, Buffer_F, device, lambda_a=10,
+        lambda_b=10, lambda_idt=0, sched_D=None,
+        sched_G=None, penalty=None):
 
 
     for i, (A_real, F_real) in enumerate(tqdm(loader)):
@@ -57,8 +55,7 @@ def fit(DiscA, DiscF, GenF_A, GenA_F,
         opt_D.zero_grad()
         D_loss.backward()
         opt_D.step()
-        if sched_D is not None:
-            sched_D.step()
+
 
         #Train Generator
 
@@ -90,71 +87,91 @@ def fit(DiscA, DiscF, GenF_A, GenA_F,
         opt_G.zero_grad()
         loss.backward()
         opt_G.step()
-        if sched_G is not None:
-            sched_G.step()
 
-        if i % 500 == 0:
+
+        if i % 1500 == 0:
             x = torch.cat([A_real, F_fake, A_rec], dim=0)
             y = torch.cat([F_real, A_fake, F_rec], dim=0)
-        plot_reconstruct(x, y)
+            plot_reconstruct(x, y)
 
 
-def train(epoches):
+    if sched_G is not None:
+        print("Current Lr:", opt_D.param_groups[0]["lr"])
+        sched_G.step()
+        print("Lr after scheduling:", opt_D.param_groups[0]["lr"])
 
-    DiscA = PatchDisc().to(device)
+    if sched_D is not None:
+        sched_D.step()
+
+
+
+def train(opt, sched_G=None, sched_D=None):
+
+    DiscA = PatchDisc().to(opt.device)
     DiscA.apply(weights_init)
 
-    DiscF = PatchDisc().to(device)
+    DiscF = PatchDisc().to(opt.device)
     DiscF.apply(weights_init)
 
-    GenA_F = ResNetGen().to(device)
+    GenA_F = ResNetGen().to(opt.device)
     GenA_F.apply(weights_init)
 
-    GenF_A = ResNetGen().to(device)
+    GenF_A = ResNetGen().to(opt.device)
     GenF_A.apply(weights_init)
 
     opt_D = torch.optim.Adam(
         itertools.chain(DiscA.parameters(), DiscF.parameters()),
-        lr=config.lr, betas=(0.5, 0.999))
+        lr=opt.lr, betas=(0.5, 0.999))
 
     opt_G = torch.optim.Adam(
         itertools.chain(GenA_F.parameters(), GenF_A.parameters()),
-        lr=config.lr, betas=(0.5, 0.999))
+        lr=opt.lr, betas=(0.5, 0.999))
+
+    if sched_D is not None:
+        sched_D = scheduler(opt_D, opt)
+
+    if sched_G is not None:
+        sched_G = scheduler(opt_G, opt)
 
 
-    df = MyDataset(config.PATH_0,
-                   config.PATH_1)
+
+
+    df = MyDataset(opt.PATH_A,
+                   opt.PATH_B)
 
     train_dl = DataLoader(
-        df, batch_size=config.BATCH, shuffle=True)
+        df, batch_size=opt.BATCH, shuffle=True)
 
     mse = torch.nn.MSELoss()
     l1 = torch.nn.L1Loss()
-    lambda_a = config.LAMBDA_A
-    lambda_b = config.LAMBDA_B
-    lambda_idt = config.LAMBDA_IDT
+    lambda_a = opt.LAMBDA_A
+    lambda_b = opt.LAMBDA_B
+    lambda_idt = opt.LAMBDA_IDT
 
-    if config.LOAD:
-        load_checkpoint(config.PATH_D_A, DiscA, opt_D, config.lr)
-        load_checkpoint(config.PATH_D_F, DiscF, opt_D, config.lr)
+    if opt.LOAD:
+        load_checkpoint(opt.PATH_D_A, DiscA, opt_D, opt.lr, device=opt.device)
+        load_checkpoint(opt.PATH_D_F, DiscF, opt_D, opt.lr, device=opt.device)
 
-        load_checkpoint(config.PATH_G_A_F, GenA_F, opt_G, config.lr)
-        load_checkpoint(config.PATH_G_F_A, GenF_A, opt_G, config.lr)
+        load_checkpoint(opt.PATH_G_A_F, GenA_F, opt_G, opt.lr, device=opt.device)
+        load_checkpoint(opt.PATH_G_F_A, GenF_A, opt_G, opt.lr, device=opt.device)
 
     Buffer_A = ImageBuffer(50)
     Buffer_F = ImageBuffer(50)
 
-    for epoch in range(epoches):
+    for epoch in range(opt.epoches):
 
         fit(DiscA, DiscF, GenF_A, GenA_F,
             opt_D, opt_G, mse, l1,
             train_dl, Buffer_A, Buffer_F,
             lambda_a, lambda_b, lambda_idt,
-            sched_D=None, sched_G=None, penalty=True)
+            sched_D=sched_D, sched_G=sched_G, penalty=False)
 
-        if config.SAVE:
+        if opt.SAVE:
             save_checkpoint(DiscF, opt_D, filename="DiscF.pth.tar")
             save_checkpoint(DiscA, opt_D, filename="DiscA.pth.tar")
             save_checkpoint(GenA_F, opt_G, filename="GenA_F.pth.tar")
             save_checkpoint(GenF_A, opt_G, filename="GenF_A.pth.tar")
 
+if __name__ == "__main__":
+    opt = Config().parse()
+    train(opt, sched_G=True, sched_D=True)

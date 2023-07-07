@@ -1,5 +1,4 @@
 import torch
-import torch.nn as nn
 import matplotlib.pyplot as plt
 
 import random
@@ -17,7 +16,7 @@ def weights_init(m):
         nn.init.normal_(m.weight.data, 1.0, 0.02)
         nn.init.constant_(m.bias.data, 0.0)
 
-def grad_penalty(disc, fake, real, device, lambda_gp=10):
+def grad_penalty(disc, fake, real, device, lambda_gp=10, constant=1):
     alpha = torch.rand(real.shape[0], 1, 1, 1, device=device)
     x_interpolate = alpha * real + (1 - alpha) * fake
     x_interpolate.requires_grad_(True)
@@ -30,7 +29,7 @@ def grad_penalty(disc, fake, real, device, lambda_gp=10):
         retain_graph=True,
     )[0]
     grad = grad.view(real.shape[0], -1)
-    grad = (torch.norm(grad, 2, dim=1) - 1) ** 2
+    grad = ((torch.norm(grad + 1e-16, 2, dim=1) - constant) ** 2) / (constant ** 2)
     grad_penalty = grad.mean() * lambda_gp
     return grad_penalty
 
@@ -81,6 +80,7 @@ def init_collab(mode):
         pass """
 
 def load_checkpoint(checkpoint_file, model, optimizer, lr, device):
+
     print("Loading checkpoint")
     checkpoint = torch.load(checkpoint_file, map_location=device)
     model.load_state_dict(checkpoint["model_dict"])
@@ -92,6 +92,7 @@ def load_checkpoint(checkpoint_file, model, optimizer, lr, device):
         param_group["lr"] = lr
 
 def plot_reconstruct(x, y):
+
     fig, axes = plt.subplots(2, 3, figsize=(20, 8))
     names = ["real", "fake", "reconstructed"]
     for i in range(3):
@@ -102,26 +103,8 @@ def plot_reconstruct(x, y):
     plt.show()
 
 
-
-
-buff = ImageBuffer(50)
-imgs = torch.randn(2, 3, 256, 256)
-print(buff.extract(imgs).shape)
-print(buff.n_images)
-
-
-
-"""def init_weights(m):
-    print("m:", m)
-    print("class:", m.__class__)
-    print("class.name:", m.__class__.__name__)
-    print("")
-    if type(m) == nn.Conv2d:
-        m.weight.data.fill_(1.0)
-#        print(m.weight)
-
-#net = nn.Sequential(nn.Linear(2, 2), nn.Linear(2, 2))
-netG = ResNetGen(3, 64, 3)
-
-netG.apply(init_weights)
-"""
+def scheduler(optim, opt):
+    def lambda_rule(epoch):
+        lr_l = 1.0 - max(0, epoch + opt.epoch_count - 100) / float(100 + 1)
+        return lr_l
+    return torch.optim.lr_scheduler.LambdaLR(optim, lr_lambda=lambda_rule)

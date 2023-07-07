@@ -1,18 +1,50 @@
-import torch
+import argparse
 
 
-PATH_0 = r"/kaggle/input/ukiyoe2photo/ukiyoe2photo/trainA"
-PATH_1 = r"/kaggle/input/ukiyoe2photo/ukiyoe2photo/trainB"
-BATCH = 1
-LOAD = False
-lr = 0.0002
-LAMBDA_A = 10
-LAMBDA_B = 10
-LAMBDA_IDT = 0.5
-LOAD = False
-PATH_D_A = ""
-PATH_D_F = ""
-PATH_G_A_F = ""
-PATH_G_F_A = ""
-SAVE = False
-device = torch.device('cuda')
+class Config:
+    """This class defines options used during  training  time.
+    """
+
+    def __init__(self):
+        """Reset the class; indicates the class hasn't been initailized"""
+        self.initialized = False
+
+    def initialize(self, parser):
+        # basic parameters
+        parser.add_argument('--PATH_A', required=True, help='path to subfolder trainA')
+        parser.add_argument('--PATH_B', required=True, help='path to subfolder trainB')
+        parser.add_argument('--LOAD', action='store_true', help='Whether to load models and optims params')
+        parser.add_argument("--PATH_D_A", type=str, help="Path to DiscriminatorA")
+        parser.add_argument("--PATH_D_F", type=str, help="Path to DiscriminatorF")
+        parser.add_argument("--PATH_G_A_F", type=str, help="Path to GeneratorG_A_F")
+        parser.add_argument("--PATH_G_F_A", type=str, help="Path to GeneratorG_F_A")
+        parser.add_argument('--SAVE', action='store_true', help='Save train params')
+
+        parser.add_argument('--BATCH', type=int, default=1, help="Batch size")
+        parser.add_argument('--lr', type=int, default=0.0002)
+        parser.add_argument('--LAMBDA_A', type=int, default=10)
+        parser.add_argument('--LAMBDA_B', type=int, default=10)
+        parser.add_argument('--LAMBDA_IDT', type=int, default=0)
+
+        parser.add_argument("--epoches", type=int, default=100, help="Number of epoches to train")
+        parser.add_argument("--epoch_count", type=int, default=100, help="count the number of model trained epoches, or point to start lr decay ICO train for one time")
+        parser.add_argument("--device", type=str, default="cuda", choices=["cpu", "cuda"])
+
+        self.initialized = True
+        return parser
+
+    def gather_options(self):
+
+        if not self.initialized:  # check if it has been initialized
+            parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+            parser = self.initialize(parser)
+
+        # save and return the parser
+        self.parser = parser
+        return parser.parse_args()
+
+    def parse(self):
+        opt = self.gather_options()
+
+        self.opt = opt
+        return self.opt
