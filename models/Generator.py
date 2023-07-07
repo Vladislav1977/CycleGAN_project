@@ -67,32 +67,7 @@ class ResNetGen(nn.Module):
         x = self.up(x)
         x = torch.tanh(self.final(x))
         return x
-#from Discriminator import PatchDisc
-#rand = torch.randn(1, 3, 256, 256)
-#netG = ResNetGen()
-#netD = PatchDisc()
 
-#fake = netG(rand)
-#D_fake = netD(fake.detach())
-#grad = torch.autograd.grad(
-#        inputs=x_interpolate,
-#        outputs=disc_interpolate,
-#        grad_outputs=torch.ones_like(disc_interpolate),
-#        create_graph=True,
-#        retain_graph=True,
-#    )[0]
-#print(D_fake.parameters()[0].requires_grad)
-
-
-#x = torch.randn(3, 3, 28, 28)
-
-#a0 = Convblock(3, 3, 7, 1, 0)
-
-#a1 = convblock(3, 3, 7, 1, 0)(x)
-
-#print(a0)
-
-#print(a1.shape)
 
 
 
