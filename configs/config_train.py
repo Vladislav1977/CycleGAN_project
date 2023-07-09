@@ -29,7 +29,7 @@ class Config:
         parser.add_argument('--penalty', action='store_true',
                             help="gradient penalty term from Wasserstein loss")
 
-        parser.add_argument("--epoches", type=int, default=100, help="Number of epoches to train")
+        parser.add_argument("--epoches", type=int, default=200, help="Number of epoches to train")
         parser.add_argument("--epoch_count", type=int, default=100,
                             help="count the number of model trained epoches or point to start lr decay ICO train for one time")
         parser.add_argument("--device", type=str, default="cuda", choices=["cpu", "cuda"])

@@ -1,3 +1,6 @@
 CycleGAN
 .idea
 train.ipynb
+checkpoints
+male_checkpoints
+weights

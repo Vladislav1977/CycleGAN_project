@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 import itertools
 
 
-from config import Config
+from configs.config_train import Config
 from utils import *
 
 from tqdm import tqdm
@@ -12,14 +12,13 @@ from models.Generator import ResNetGen
 from dataprocess.data import MyDataset
 
 
-device = torch.device('cuda')
 
 
 def fit(DiscA, DiscF, GenF_A, GenA_F,
         opt_D, opt_G, mse, l1, loader,
         Buffer_A, Buffer_F, device, lambda_a=10,
         lambda_b=10, lambda_idt=0, sched_D=None,
-        sched_G=None, penalty=None):
+        sched_G=None, penalty=False):
 
 
     for i, (A_real, F_real) in enumerate(tqdm(loader)):
@@ -46,7 +45,7 @@ def fit(DiscA, DiscF, GenF_A, GenA_F,
         MSE_F_fake = mse(D_F_fake, torch.zeros_like(D_F_fake))
         D_F_loss = (MSE_F_real + MSE_F_fake) / 2
 
-        if penalty is not None:
+        if penalty:
             D_F_loss += grad_penalty(DiscF, F_fake_buff, F_real)
             D_A_loss += grad_penalty(DiscA, A_fake_buff, A_real)
 
@@ -164,7 +163,7 @@ def train(opt, sched_G=None, sched_D=None):
             opt_D, opt_G, mse, l1,
             train_dl, Buffer_A, Buffer_F,
             lambda_a, lambda_b, lambda_idt,
-            sched_D=sched_D, sched_G=sched_G, penalty=False)
+            sched_D=sched_D, sched_G=sched_G, penalty=opt.penalty)
 
         if opt.SAVE:
             save_checkpoint(DiscF, opt_D, filename="DiscF.pth.tar")
