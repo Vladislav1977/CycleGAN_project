@@ -18,13 +18,50 @@ CycleGAN was trained without `gradient penalty` and `identity mapping loss` for 
 
 With the following results:
 
-
+<p align="center">
+  <img src="examples/female_anime.PNG">
+</p>
 
 ### Male2anime
 
-Custom dataset wad collected. 3050 male anime characters were webscrapped [from anime-planet][anime-planet], 4x upscaled by [waifu2x][https://github.com/yu45020/Waifu2x], faces were detected by [lbpcascade_animeface][https://github.com/nagadomi/lbpcascade_animeface], then resize and centercropped by 256.
+Custom dataset wad collected. 3050 male anime characters were webscrapped [from anime-planet][anime-planet], 4x upscaled by [waifu2x](https://github.com/yu45020/Waifu2x), faces were detected by [lbpcascade_animeface](https://github.com/nagadomi/lbpcascade_animeface), then resize and center cropped by 256. Selfies were taked from Celeba dataset. Below dataset images are presented.
+
+<p align="center">
+  <img src="examples/male2anime.PNG">
+</p>
+
+
+The model was trained for 120 epoches (72 epoches lr 0.0002, 5o epoches lr 0.0001) without without `gradient penalty` and `identity mapping loss`.
+One of the best results are below:
+
+<p align="center">
+  <img src="examples/male.PNG">
+</p>
+
+# Usage
+
+Download repository and change to current directory
+
+Run
+
+```
+python script --src path/to/source/image.png --dest path/to/output/image/name.png
+```
+`Note`: by default it transforms to female anime. If you want to transform male, `--male` option must be added to above code
+
+```
+python script --src path/to/source/image.png --dest path/to/output/image/name.png --male
+```
+
+If you want to train model, use:
+
+```
+python train.py --PATH_A path/to/trainA/image/folder --PATH_B path/to/trainB/image/folder
+```
+`Note`: See a lot more options in configs.config_train.py
+
 
 
 
 [selfie2anime]: https://www.kaggle.com/datasets/arnaud58/selfie2anime
-[anime-planet] :https://www.anime-planet.com
+[anime-planet]: https://www.anime-planet.com
