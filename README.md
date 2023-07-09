@@ -42,6 +42,8 @@ One of the best results are below:
 
 Download repository and change to current directory
 
+Download model [weights](https://drive.google.com/drive/folders/1plKb46Rxx5-ZTOdyPK0Ean2l2kmYI0ez) to weight subfolders
+
 Run
 
 ```
