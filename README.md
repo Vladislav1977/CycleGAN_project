@@ -10,11 +10,11 @@ So there are two purposes of this project:
 - trying to collect custom dataset male2anime and train implemented CycleGAN on this dataset for male photo to anime character.
 
 
-# Training history and detail
+# Training details and results
 
 ### Selfie2anime
 
-CycleGAN was trained without `gradient penalty` and `identity mapping loss` for 190 epoches (75 epoches with 0.0002 lr, 25 with 0.0001 lr, 90 epoch with linear decay lr)
+CycleGAN was trained without `gradient penalty` and `identity mapping loss` for 190 epoches (75 epoches with 0.0002 lr, 25 with 0.0001 lr, 90 epoches with linear decay lr)
 
 With the following results:
 
@@ -31,7 +31,7 @@ Custom dataset wad collected. 3050 male anime characters were webscrapped [from 
 </p>
 
 
-The model was trained for 120 epoches (72 epoches lr 0.0002, 5o epoches lr 0.0001) without without `gradient penalty` and `identity mapping loss`.
+The model was trained for 120 epoches (72 epoches lr 0.0002, 5o epoches lr 0.0001) without `gradient penalty` and `identity mapping loss`.
 One of the best results are below:
 
 <p align="center">
@@ -52,7 +52,7 @@ python script --src path/to/source/image.png --dest path/to/output/image/name.pn
 `Note`: by default it transforms to female anime. If you want to transform male, `--male` option must be added to above code
 
 ```
-python script --src path/to/source/image.png --dest path/to/output/image/name.png --male
+python script.py --src path/to/source/image/name.png --dest path/to/output/image/name.png --male
 ```
 
 If you want to train model, use:
