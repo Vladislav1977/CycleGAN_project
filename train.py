@@ -6,7 +6,7 @@ import itertools
 from configs.config_train import Config
 from utils import *
 
-from tqdm import tqdm
+from tqdm import tqdm 
 from models.Discriminator import PatchDisc
 from models.Generator import ResNetGen
 from dataprocess.data import MyDataset
@@ -161,7 +161,7 @@ def train(opt, sched_G=None, sched_D=None):
 
         fit(DiscA, DiscF, GenF_A, GenA_F,
             opt_D, opt_G, mse, l1,
-            train_dl, Buffer_A, Buffer_F,
+            train_dl, Buffer_A, Buffer_F, opt.device,
             lambda_a, lambda_b, lambda_idt,
             sched_D=sched_D, sched_G=sched_G, penalty=opt.penalty)
 
@@ -173,4 +173,5 @@ def train(opt, sched_G=None, sched_D=None):
 
 if __name__ == "__main__":
     opt = Config().parse()
+    print(opt.device)
     train(opt, sched_G=True, sched_D=True)

@@ -97,9 +97,9 @@ def plot_reconstruct(x, y):
     names = ["real", "fake", "reconstructed"]
     for i in range(3):
         #    i = np.random.randint(13143)
-        axes[0][i].imshow(torch.permute(x[i], (1, 2, 0)).detach().to("cpu"))
+        axes[0][i].imshow(torch.permute(x[i] * 0.5 + 0.5, (1, 2, 0)).detach().to("cpu"))
         axes[0][i].set_title(names[i])
-        axes[1][i].imshow(torch.permute(y[i], (1, 2, 0)).detach().to("cpu"))
+        axes[1][i].imshow(torch.permute(y[i] * 0.5 + 0.5, (1, 2, 0)).detach().to("cpu"))
     plt.show()
 
 
