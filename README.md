@@ -7,7 +7,7 @@ But there is one problem with that dataset. Both anime characters and selfies ar
 
 So there are two purposes of this project:
 - implement CycleGAN architecture with further training of it on selfie2anime dataset
-- trying to collect custom dataset male2anime and train implemented CycleGAN on this dataset for male photo to anime character.
+- trying to collect custom dataset male2anime and train CycleGAN on this dataset for male photo to anime character transform.
 
 
 # Training details and results
@@ -24,7 +24,7 @@ With the following results:
 
 ### Male2anime
 
-Custom dataset wad collected. 3050 male anime characters were webscrapped [from anime-planet][anime-planet], 4x upscaled by [waifu2x](https://github.com/yu45020/Waifu2x), faces were detected by [lbpcascade_animeface](https://github.com/nagadomi/lbpcascade_animeface), then resize and center cropped by 256. Selfies were taked from Celeba dataset. Below dataset images are presented.
+Custom dataset wad collected. 3050 male anime characters were webscrapped [from anime-planet][anime-planet], 4x upscaled by [waifu2x](https://github.com/yu45020/Waifu2x), faces were detected by [lbpcascade_animeface](https://github.com/nagadomi/lbpcascade_animeface), then resize and center cropped by 256. Selfies were taken from Celeba dataset. Below dataset images are presented.
 
 <p align="center">
   <img src="examples/male2anime.PNG">
@@ -47,7 +47,7 @@ Download model [weights](https://drive.google.com/drive/folders/1plKb46Rxx5-ZTOd
 Run
 
 ```
-python script --src path/to/source/image.png --dest path/to/output/image/name.png
+python script.py --src path/to/source/image.png --dest path/to/output/image/name.png
 ```
 `Note`: by default it transforms to female anime. If you want to transform male, `--male` option must be added to above code
 
@@ -65,5 +65,5 @@ python train.py --PATH_A path/to/trainA/image/folder --PATH_B path/to/trainB/ima
 
 
 
-[selfie2anime]: https://www.kaggle.com/datasets/arnaud58/selfie2anime
+[selfie2anime]: https://www.kaggle.com/datasets/arnaud58/selfie2anime**
 [anime-planet]: https://www.anime-planet.com
